@@ -1,0 +1,22 @@
+* Description
+  Edit mode for [[https://github.com/ch11ng/exwm][EXWM]]
+
+  Similar to [[https://github.com/alpha22jp/atomic-chrome][atomic-chrome]]
+
+  except this package is made to work with EXWM
+  and it works with any editable element of any app
+
+  The idea is very simple - when you press the keybinding,
+  it simulates =C-a= + =C-x= (select all & cut),
+  then opens a buffer and yanks the content so you can edit it,
+  after you done - it grabs (now edited text) and pastes back to where it's started
+
+* Prerequisites
+  In order for it to work properly, you're gonna need to install [[https://github.com/DamienCassou/gpastel][gpastel]]. Follow instructions for the package.
+
+* Keybindings
+  ~C-c '​~   - edit, just like in Org-mode
+
+  ~C-c C-c~ - finish editing
+
+  ~C-c C-k~ - cancel editing

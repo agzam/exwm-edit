@@ -13,7 +13,7 @@
 ;;
 ;; Similar to atomic-chrome https://github.com/alpha22jp/atomic-chrome
 ;; except this package is made to work with EXWM
-;; and works with any editable element of any app
+;; and it works with any editable element of any app
 ;;
 ;; The idea is very simple - when you press the keybinding,
 ;; it simulates [C-a (select all) + C-x (cut)],
