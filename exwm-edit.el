@@ -43,86 +43,91 @@
 ;;
 ;;; Code:
 
-(with-eval-after-load 'exwm
-  (defvar exwm-edit--last-exwm-buffer nil
-    "Last buffer that invoked `exwm-edit'.")
+(require 'exwm)
+(require 'gpastel)
 
-  (defun exwm-edit--finish ()
-    (interactive)
-    (mark-whole-buffer)
-    (kill-region (region-beginning)
-                 (region-end))
-    (kill-buffer-and-window)
-    (let ((buffer (switch-to-buffer exwm-edit--last-exwm-buffer)))
-      (with-current-buffer buffer
-        (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
-        (exwm-input--fake-key ?\C-v)
-        (setq exwm-edit--last-exwm-buffer nil))))
+(defvar exwm-edit--last-exwm-buffer nil
+  "Last buffer that invoked `exwm-edit'.")
 
-  (defun exwm-edit--cancel ()
-    (interactive)
-    (kill-buffer-and-window)
-    (let ((buffer (switch-to-buffer exwm-edit--last-exwm-buffer)))
-      (with-current-buffer buffer
-        (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
-        (exwm-input--fake-key ?\C-v)
-        (setq exwm-edit--last-exwm-buffer nil))))
+(defun exwm-edit--finish ()
+  "Called when done editing buffer created by `exwm-edit--compose'."
+  (interactive)
+  (mark-whole-buffer)
+  (kill-region (region-beginning)
+               (region-end))
+  (kill-buffer-and-window)
+  (let ((buffer (switch-to-buffer exwm-edit--last-exwm-buffer)))
+    (with-current-buffer buffer
+      (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
+      (exwm-input--fake-key ?\C-v)
+      (setq exwm-edit--last-exwm-buffer nil))))
 
-  (defvar exwm-edit-mode-map
-    (let ((map (make-sparse-keymap)))
-      (define-key map (kbd "C-c C-c") 'exwm-edit--finish)
-      (define-key map (kbd "C-c C-k") 'exwm-edit--cancel)
-      map)
-    "Keymap for minor mode `exwm-edit-mode'.")
+(defun exwm-edit--cancel ()
+  "Called to cancell editing in a buffer created by `exwm-edit--compose'."
+  (interactive)
+  (kill-buffer-and-window)
+  (let ((buffer (switch-to-buffer exwm-edit--last-exwm-buffer)))
+    (with-current-buffer buffer
+      (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
+      (exwm-input--fake-key ?\C-v)
+      (setq exwm-edit--last-exwm-buffer nil))))
 
-  (define-minor-mode exwm-edit-mode
-    "Minor mode enabled in `exwm-edit--compose' buffer"
-    :init-value nil
-    :lighter " exwm-edit"
-    :keymap exwm-edit-mode-map)
+(defvar exwm-edit-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-c") 'exwm-edit--finish)
+    (define-key map (kbd "C-c C-k") 'exwm-edit--cancel)
+    map)
+  "Keymap for minor mode `exwm-edit-mode'.")
 
-  (defun exwm-edit--buffer-title (str)
-    (concat "*exwm-edit " str " *"))
+(define-minor-mode exwm-edit-mode
+  "Minor mode enabled in `exwm-edit--compose' buffer"
+  :init-value nil
+  :lighter " exwm-edit"
+  :keymap exwm-edit-mode-map)
 
-  (defun exwm-edit--turn-on-edit-mode ()
-    "Turn on `exwm-edit-mode' if the buffer was created by `exwm-edit--compose'"
-    (when (string= (exwm-edit--buffer-title exwm-edit--last-exwm-buffer)
-              (buffer-name (current-buffer)))
-      (exwm-edit-mode t)))
+(defun exwm-edit--buffer-title (str)
+  "`exwm-edit' buffer title based on STR."
+  (concat "*exwm-edit " str " *"))
 
-  (define-global-minor-mode global-exwm-edit-mode
-    exwm-edit-mode exwm-edit--turn-on-edit-mode)
+(defun exwm-edit--turn-on-edit-mode ()
+  "Turn on `exwm-edit-mode' if the buffer was created by `exwm-edit--compose'."
+  (when (string= (exwm-edit--buffer-title exwm-edit--last-exwm-buffer)
+                 (buffer-name (current-buffer)))
+    (exwm-edit-mode t)))
 
-  (defun exwm-edit--compose ()
-    "Edit text in an EXWM app"
-    (interactive)
-    (let* ((title (exwm-edit--buffer-title (buffer-name)))
-           (existing (get-buffer title))
-           (inhibit-read-only t)
-           (save-interprogram-paste-before-kill t)
-           (yank-pop-change-selection t))
-      (when (derived-mode-p 'exwm-mode)
-        (setq exwm-edit--last-exwm-buffer (buffer-name))
-        (if existing
-            (switch-to-buffer-other-window existing)
-          (progn
-            (exwm-input--fake-key ?\C-a)
-            (exwm-input--fake-key ?\C-x)
-            (exwm-input--fake-key ?\C-\M-o)
-            (let* ((buffer (get-buffer-create title)))
-              (with-current-buffer buffer
-                (text-mode)
-                (spacemacs/toggle-visual-line-navigation-on)
-                (insert (gpastel-get-copied-text))
-                (evil-insert 1)
-                (exwm-edit-mode 1)
-                (switch-to-buffer-other-window buffer)
-                (setq-local
-                 header-line-format
-                 (substitute-command-keys
-                  "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'")))))))))
+(define-global-minor-mode global-exwm-edit-mode
+  exwm-edit-mode exwm-edit--turn-on-edit-mode)
 
-  (exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
-  (global-exwm-edit-mode 1))
+(defun exwm-edit--compose ()
+  "Edit text in an EXWM app."
+  (interactive)
+  (let* ((title (exwm-edit--buffer-title (buffer-name)))
+         (existing (get-buffer title))
+         (inhibit-read-only t)
+         (save-interprogram-paste-before-kill t)
+         (yank-pop-change-selection t))
+    (when (derived-mode-p 'exwm-mode)
+      (setq exwm-edit--last-exwm-buffer (buffer-name))
+      (if existing
+          (switch-to-buffer-other-window existing)
+        (progn
+          (exwm-input--fake-key ?\C-a)
+          (exwm-input--fake-key ?\C-x)
+          (exwm-input--fake-key ?\C-\M-o)
+          (let* ((buffer (get-buffer-create title)))
+            (with-current-buffer buffer
+              (text-mode)
+              (insert (gpastel-get-copied-text))
+              (exwm-edit-mode 1)
+              (switch-to-buffer-other-window buffer)
+              (setq-local
+               header-line-format
+               (substitute-command-keys
+                "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'")))))))))
+
+(exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
+(global-exwm-edit-mode 1)
 
 (provide 'exwm-edit)
+
+;;; exwm-edit.el ends here
