@@ -1,12 +1,11 @@
 ;;; exwm-edit.el --- Edit mode for EXWM -*- lexical-binding: t; -*-
-;;
-;; Filename: exwm-edit.el
-;; Description: Edit mode for EXWM.
-;; Author: Ag Ibragimov
-;; Maintainer: Ag Ibragimov (concat "agzam.ibragimov" "@" "gm" "ail" ".c" "om")
-;; Copyright (C) 2018  Ag Ibragimov
 
-;; Keywords: exwm edit
+;; Author: Ag Ibragimov
+;; URL: https://github.com/darkstego/wakib-keys/
+;; Created: 2018-05-16
+;; Keywords: convenience
+;; License: GPL v3
+;; Package-Requires: ((emacs "24.4"))
 ;; Version: 0.0.1
 
 ;;; Commentary:
@@ -96,7 +95,8 @@
     (exwm-edit-mode t)))
 
 (define-global-minor-mode global-exwm-edit-mode
-  exwm-edit-mode exwm-edit--turn-on-edit-mode)
+  exwm-edit-mode exwm-edit--turn-on-edit-mode
+  :require 'exwm-edit)
 
 (defun exwm-edit--compose ()
   "Edit text in an EXWM app."
