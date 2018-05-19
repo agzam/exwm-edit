@@ -73,7 +73,7 @@
 
 (defvar exwm-edit-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-c") 'exwm-edit--finish)
+    (define-key map (kbd "C-c '") 'exwm-edit--finish)
     (define-key map (kbd "C-c C-k") 'exwm-edit--cancel)
     map)
   "Keymap for minor mode `exwm-edit-mode'.")
