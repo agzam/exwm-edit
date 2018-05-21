@@ -11,6 +11,7 @@
   then opens a buffer and yanks the content so you can edit it,
   after you done - it grabs (now edited text) and pastes back to where it's started
 
+[[file:howitworks.gif]]
 * Prerequisites
   In order for it to work properly, you're gonna need to install [[https://github.com/DamienCassou/gpastel][gpastel]]. Follow instructions for the package.
 
@@ -19,6 +20,6 @@
 
   ~C-c '​~   - edit
 
-  ~C-c '~   - finish editing
+  ~C-c '​~   - finish editing
 
   ~C-c C-k~ - cancel editing
