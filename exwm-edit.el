@@ -108,6 +108,8 @@
          (yank-pop-change-selection t))
     (when (derived-mode-p 'exwm-mode)
       (setq exwm-edit--last-exwm-buffer (buffer-name))
+      (unless (bound-and-true-p global-exwm-edit-mode)
+        (global-exwm-edit-mode 1))
       (if existing
           (switch-to-buffer-other-window existing)
         (progn
@@ -126,7 +128,7 @@
                 "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'")))))))))
 
 (exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
-(global-exwm-edit-mode 1)
+
 
 (provide 'exwm-edit)
 
