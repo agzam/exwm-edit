@@ -43,7 +43,6 @@
 ;;; Code:
 
 (require 'exwm)
-(require 'gpastel)
 
 (defvar exwm-edit--last-exwm-buffer nil
   "Last buffer that invoked `exwm-edit'.")
@@ -74,6 +73,7 @@
 (defvar exwm-edit-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c '") 'exwm-edit--finish)
+    (define-key map (kbd "C-c C-c") 'exwm-edit--finish)
     (define-key map (kbd "C-c C-k") 'exwm-edit--cancel)
     map)
   "Keymap for minor mode `exwm-edit-mode'.")
@@ -113,13 +113,13 @@
         (progn
           (exwm-input--fake-key ?\C-a)
           (exwm-input--fake-key ?\C-x)
-          (exwm-input--fake-key ?\C-\M-o)
           (let* ((buffer (get-buffer-create title)))
             (with-current-buffer buffer
               (text-mode)
-              (insert (gpastel-get-copied-text))
               (exwm-edit-mode 1)
               (switch-to-buffer-other-window buffer)
+              (kill-new (gui-get-primary-selection))
+              (yank)
               (setq-local
                header-line-format
                (substitute-command-keys
