@@ -7,19 +7,19 @@
   and it works with any editable element of any app
 
   The idea is very simple - when you press the keybinding,
-  it simulates =C-a= + =C-x= (select all & cut),
-  then opens a buffer and yanks the content so you can edit it,
+  it simulates =C-a= + =C-c= (select all & copy),
+  then opens a buffer and yanks (pastes) the content so you can edit it,
   after you done - it grabs (now edited text) and pastes back to where it's started
 
 [[file:howitworks.gif]]
-* Prerequisites
-  In order for it to work properly, you're gonna need to install [[https://github.com/DamienCassou/gpastel][gpastel]]. Follow instructions for the package.
-
 * Keybindings
-  Default keybindings are just like in Org-mode:
+  Default keybindings are just like in Org-mode (for editing source blocks):
 
-  ~C-c '​~   - edit
+  ~C-c '​~ or ~C-c C-'​~  - edit
 
-  ~C-c '​~   - finish editing
+  ~C-c '​~ or ~C-c C-c~  - finish editing
 
   ~C-c C-k~ - cancel editing
+* Extra
+   You can select arbitrary piece of text manually and then invoke ~exwm-edit--compose~ with a universal argument: ~C-u C-c '​~
+   That way it would only edit the selected piece, instead of grabbing everything.

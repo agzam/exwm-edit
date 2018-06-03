@@ -1,7 +1,7 @@
 ;;; exwm-edit.el --- Edit mode for EXWM -*- lexical-binding: t; -*-
 
 ;; Author: Ag Ibragimov
-;; URL: https://github.com/darkstego/wakib-keys/
+;; URL: https://github.com/agzam/exwm-edit
 ;; Created: 2018-05-16
 ;; Keywords: convenience
 ;; License: GPL v3
@@ -12,17 +12,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Similar to atomic-chrome https://github.com/alpha22jp/atomic-chrome
-;; except this package is made to work with EXWM
+;; except this package is made to work with EXWM https://github.com/ch11ng/exwm
 ;; and it works with any editable element of any app
 ;;
 ;; The idea is very simple - when you press the keybinding,
-;; it simulates [C-a (select all) + C-x (cut)],
-;; the opens a buffer and yanks the content - so you can edit it,
-;; after you done - it grabs (now edited text) and pastes back to the original app
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Prerequisites:
-;; in order for it to work properly, you're gonna need to install https://github.com/DamienCassou/gpastel
+;; it simulates [C-a (select all) + C-c (copy)],
+;; then opens a buffer and yanks (pastes) the content so you can edit it,
+;; after you done - it grabs (now edited text) and pastes back to where it's started
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; This program is free software; you can redistribute it and/or modify
@@ -73,6 +69,7 @@
 (defvar exwm-edit-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c '") 'exwm-edit--finish)
+    (define-key map (kbd "C-c C-'") 'exwm-edit--finish)
     (define-key map (kbd "C-c C-c") 'exwm-edit--finish)
     (define-key map (kbd "C-c C-k") 'exwm-edit--cancel)
     map)
@@ -98,9 +95,12 @@
   exwm-edit-mode exwm-edit--turn-on-edit-mode
   :require 'exwm-edit)
 
-(defun exwm-edit--compose ()
-  "Edit text in an EXWM app."
-  (interactive)
+(defun exwm-edit--compose (&optional selected)
+  "Edit text in an EXWM app.
+
+With a `\\[universal-argument]' prefix argument SELECTED, does not simulate \"select all\", \
+i.e. wouldn't fake `[C-a]' before copying text to clipboard, so user can edit arbitrary piece of the content by manually selecting it first."
+  (interactive "P")
   (let* ((title (exwm-edit--buffer-title (buffer-name)))
          (existing (get-buffer title))
          (inhibit-read-only t)
@@ -113,9 +113,10 @@
       (if existing
           (switch-to-buffer-other-window existing)
         (progn
-          (exwm-input--fake-key ?\C-a)
+          (unless selected
+            (exwm-input--fake-key ?\C-a))
           (exwm-input--fake-key ?\C-c)
-          (let* ((buffer (get-buffer-create title)))
+          (let ((buffer (get-buffer-create title)))
             (with-current-buffer buffer
               (text-mode)
               (exwm-edit-mode 1)
@@ -128,7 +129,7 @@
                 "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'")))))))))
 
 (exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
-
+(exwm-input-set-key (kbd "C-c C-'") #'exwm-edit--compose)
 
 (provide 'exwm-edit)
 
