@@ -67,7 +67,7 @@
   (let ((buffer (switch-to-buffer exwm-edit--last-exwm-buffer)))
     (with-current-buffer buffer
       (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
-      (exwm-input--fake-key ?\C-v)
+      (exwm-input--fake-key 'right)
       (setq exwm-edit--last-exwm-buffer nil))))
 
 (defvar exwm-edit-mode-map
@@ -114,7 +114,7 @@
           (switch-to-buffer-other-window existing)
         (progn
           (exwm-input--fake-key ?\C-a)
-          (exwm-input--fake-key ?\C-x)
+          (exwm-input--fake-key ?\C-c)
           (let* ((buffer (get-buffer-create title)))
             (with-current-buffer buffer
               (text-mode)
