@@ -23,3 +23,15 @@
 * Extra
    You can select arbitrary piece of text manually and then invoke ~exwm-edit--compose~ with a universal argument: ~C-u C-c '​~
    That way it would only edit the selected piece, instead of grabbing everything.
+* Customization
+  You can use hooks to set desired mode, etc, e.g.:
+
+  #+begin_src emacs-lisp
+    (use-package exwm-edit
+      :config
+      (defun ag-exwm/on-exwm-edit-compose ()
+        (spacemacs/toggle-visual-line-navigation-on)
+        (funcall 'markdown-mode))
+
+      (add-hook 'exwm-edit-compose-hook 'ag-exwm/on-exwm-edit-compose))
+  #+end_src

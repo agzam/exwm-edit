@@ -43,9 +43,25 @@
 (defvar exwm-edit--last-exwm-buffer nil
   "Last buffer that invoked `exwm-edit'.")
 
+(defcustom exwm-edit-compose-hook nil
+  "Customizable hook, runs after `exwm-edit--compose' buffer created."
+  :type 'hook
+  :group 'exwm-edit)
+
+(defcustom exwm-edit-before-finish-hook nil
+  "Customizable hook, runs before `exwm-edit--finish'."
+  :type 'hook
+  :group 'exwm-edit)
+
+(defcustom exwm-edit-before-cancel-hook nil
+  "Customizable hook, runs before `exwm-edit--cancel'."
+  :type 'hook
+  :group 'exwm-edit)
+
 (defun exwm-edit--finish ()
   "Called when done editing buffer created by `exwm-edit--compose'."
   (interactive)
+  (run-hooks 'exwm-edit-before-finish-hook)
   (mark-whole-buffer)
   (kill-region (region-beginning)
                (region-end))
@@ -59,6 +75,7 @@
 (defun exwm-edit--cancel ()
   "Called to cancell editing in a buffer created by `exwm-edit--compose'."
   (interactive)
+  (run-hooks 'exwm-edit-before-cancel-hook)
   (kill-buffer-and-window)
   (let ((buffer (switch-to-buffer exwm-edit--last-exwm-buffer)))
     (with-current-buffer buffer
@@ -118,7 +135,7 @@ i.e. wouldn't fake `[C-a]' before copying text to clipboard, so user can edit ar
           (exwm-input--fake-key ?\C-c)
           (let ((buffer (get-buffer-create title)))
             (with-current-buffer buffer
-              (text-mode)
+              (run-hooks 'exwm-edit-compose-hook)
               (exwm-edit-mode 1)
               (switch-to-buffer-other-window buffer)
               (kill-new (gui-get-primary-selection))
