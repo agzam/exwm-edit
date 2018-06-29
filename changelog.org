@@ -1,0 +1,3 @@
+[2018-06-29 Fri]
+
+- it now automatically determines if something is pre-selected and edits only that piece (before it required passing a universal argument)

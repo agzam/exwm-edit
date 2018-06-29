@@ -20,9 +20,6 @@
   ~C-c '​~ or ~C-c C-c~  - finish editing
 
   ~C-c C-k~ - cancel editing
-* Extra
-   You can select arbitrary piece of text manually and then invoke ~exwm-edit--compose~ with a universal argument: ~C-u C-c '​~
-   That way it would only edit the selected piece, instead of grabbing everything.
 * Customization
   You can use hooks to set desired mode, etc, e.g.:
 

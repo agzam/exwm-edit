@@ -112,17 +112,17 @@
   exwm-edit-mode exwm-edit--turn-on-edit-mode
   :require 'exwm-edit)
 
-(defun exwm-edit--compose (&optional selected)
-  "Edit text in an EXWM app.
-
-With a `\\[universal-argument]' prefix argument SELECTED, does not simulate \"select all\", \
-i.e. wouldn't fake `[C-a]' before copying text to clipboard, so user can edit arbitrary piece of the content by manually selecting it first."
-  (interactive "P")
+(defun exwm-edit--compose ()
+  "Edit text in an EXWM app."
+  (interactive)
   (let* ((title (exwm-edit--buffer-title (buffer-name)))
          (existing (get-buffer title))
          (inhibit-read-only t)
          (save-interprogram-paste-before-kill t)
-         (yank-pop-change-selection t))
+         (sel (gui-get-selection 'PRIMARY 'STRING))
+         (unmarked? (or (not sel)
+                        (string= (substring-no-properties (or sel ""))
+                                 (substring-no-properties (or (car kill-ring) ""))))))
     (when (derived-mode-p 'exwm-mode)
       (setq exwm-edit--last-exwm-buffer (buffer-name))
       (unless (bound-and-true-p global-exwm-edit-mode)
@@ -130,16 +130,15 @@ i.e. wouldn't fake `[C-a]' before copying text to clipboard, so user can edit ar
       (if existing
           (switch-to-buffer-other-window existing)
         (progn
-          (unless selected
-            (exwm-input--fake-key ?\C-a))
-          (exwm-input--fake-key ?\C-c)
+          (when unmarked? (exwm-input--fake-key ?\C-a))
           (let ((buffer (get-buffer-create title)))
             (with-current-buffer buffer
               (run-hooks 'exwm-edit-compose-hook)
               (exwm-edit-mode 1)
               (switch-to-buffer-other-window buffer)
-              (kill-new (gui-get-primary-selection))
-              (yank)
+              (let ((sel (gui-get-selection 'PRIMARY 'STRING)))
+                (kill-new sel)
+                (insert sel))
               (setq-local
                header-line-format
                (substitute-command-keys
