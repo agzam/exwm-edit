@@ -119,6 +119,7 @@
          (existing (get-buffer title))
          (inhibit-read-only t)
          (save-interprogram-paste-before-kill t)
+         (selection-coding-system 'utf-8)             ; required for multilang-support
          (sel (gui-get-selection 'PRIMARY 'STRING))
          (unmarked? (or (not sel)
                         (string= (substring-no-properties (or sel ""))

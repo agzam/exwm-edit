@@ -1,3 +1,22 @@
+* Caution
+  Recently there seem to be a number of changes in exwm and xelb projects that break some of the behaviors of this package. Until things are fixed I'd recommended pinning the following commits:
+
+https://github.com/ch11ng/xelb/commit/fe1b643e98ea4a87a3eed41b0bbaf6c12dfcfbec
+https://github.com/ch11ng/exwm/commit/b75c89cae2a1c4c70044f885c44a95fd2f9950dd
+
+** See also [[https://github.com/agzam/exwm-edit/issues/5][#5]]
+** In Spacemacs pinning a specific commit version can be done like this:
+  #+begin_src emacs-lisp
+    (xelb :location (recipe :fetcher github
+                            :repo "ch11ng/xelb"
+                            :commit "fe1b643e98ea4a87a3eed41b0bbaf6c12dfcfbec")
+          :step pre)
+    (exwm :location (recipe :fetcher github
+                            :repo "ch11ng/exwm"
+                            :commit "b75c89cae2a1c4c70044f885c44a95fd2f9950dd")
+          :step pre)
+  #+end_src
+
 * Description
   Edit mode for [[https://github.com/ch11ng/exwm][EXWM]]
 
@@ -12,6 +31,14 @@
   after you done - it grabs (now edited text) and pastes back to where it's started
 
 [[file:howitworks.gif]]
+
+  Now that opens interesting possibilities, for example:
+  - when typing in ChromeDevTools console, you can initiate exwm-edit, then change major mode to whatever your favorite javascript mode is, have all the JS syntax highlighting, flycheck, etc;
+  - you can edit GitHub issues and wiki pages using markdown-mode and use your syntax checker and thesaurus;
+  - quickly modify url in browser address bar using multiple-cursors and regexp-replace things;
+  - edit and modify code snippets with ease in Slack;
+  - etc. and etc.
+
 * Keybindings
   Default keybindings are just like in Org-mode (for editing source blocks):
 
