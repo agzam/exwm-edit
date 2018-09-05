@@ -25,9 +25,9 @@ https://github.com/ch11ng/exwm/commit/b75c89cae2a1c4c70044f885c44a95fd2f9950dd
   except this package is made to work with EXWM
   and it works with any editable element of any app
 
-  The idea is very simple - when you press the keybinding,
-  it simulates =C-a= + =C-c= (select all & copy),
-  then opens a buffer and yanks (pastes) the content so you can edit it,
+  The idea is very simple - when you invoke the edit,
+  it simulates =C-a= + =C-c= (select all & copy), or simply =C-c= if you already have something pre-selected.
+  Then it opens a buffer and yanks (pastes) the content so you can edit it,
   after you done - it grabs (now edited text) and pastes back to where it's started
 
 [[file:howitworks.gif]]
