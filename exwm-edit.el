@@ -115,6 +115,8 @@
 (defun exwm-edit--compose ()
   "Edit text in an EXWM app."
   (interactive)
+  ;; flushing clipboard is required, otherwise `gui-get-selection` simply picks up what's in the clipboard (when nothing is actually selected in GUI)
+  (gui-set-selection 'PRIMARY nil)
   (let* ((title (exwm-edit--buffer-title (buffer-name)))
          (existing (get-buffer title))
          (inhibit-read-only t)

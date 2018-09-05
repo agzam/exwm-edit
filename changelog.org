@@ -1,3 +1,6 @@
+[2018-09-04 Tue]
+- Fixes https://github.com/agzam/exwm-edit/issues/4 (hopefully)
+
 [2018-08-12 Sun]
 - Fix for https://github.com/agzam/exwm-edit/issues/3 - Add multilang support
 
