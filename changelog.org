@@ -1,3 +1,6 @@
+[2018-09-05 Wed]
+- Fixes https://github.com/agzam/exwm-edit/issues/5
+
 [2018-09-04 Tue]
 - Fixes https://github.com/agzam/exwm-edit/issues/4 (hopefully)
 

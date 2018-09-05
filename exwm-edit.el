@@ -69,7 +69,7 @@
   (let ((buffer (switch-to-buffer exwm-edit--last-exwm-buffer)))
     (with-current-buffer buffer
       (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
-      (exwm-input--fake-key ?\C-v)
+      (run-at-time "0.05 sec" nil (lambda () (exwm-input--fake-key ?\C-v)))
       (setq exwm-edit--last-exwm-buffer nil))))
 
 (defun exwm-edit--cancel ()
@@ -116,13 +116,13 @@
   "Edit text in an EXWM app."
   (interactive)
   ;; flushing clipboard is required, otherwise `gui-get-selection` simply picks up what's in the clipboard (when nothing is actually selected in GUI)
-  (gui-set-selection 'PRIMARY nil)
+  (gui-set-selection nil nil)
   (let* ((title (exwm-edit--buffer-title (buffer-name)))
          (existing (get-buffer title))
          (inhibit-read-only t)
          (save-interprogram-paste-before-kill t)
          (selection-coding-system 'utf-8)             ; required for multilang-support
-         (sel (gui-get-selection 'PRIMARY 'STRING))
+         (sel (gui-get-selection))
          (unmarked? (or (not sel)
                         (string= (substring-no-properties (or sel ""))
                                  (substring-no-properties (or (car kill-ring) ""))))))
@@ -139,7 +139,7 @@
               (run-hooks 'exwm-edit-compose-hook)
               (exwm-edit-mode 1)
               (switch-to-buffer-other-window buffer)
-              (let ((sel (gui-get-selection 'PRIMARY 'STRING)))
+              (let ((sel (gui-get-selection)))
                 (kill-new sel)
                 (insert sel))
               (setq-local
