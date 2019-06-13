@@ -58,6 +58,11 @@
   :type 'hook
   :group 'exwm-edit)
 
+(defcustom exwm-edit-bind-default-keys t
+  "If non-nil bind default keymaps on load."
+  :type 'boolean
+  :group 'exwm-edit)
+
 (defun exwm-edit--finish ()
   "Called when done editing buffer created by `exwm-edit--compose'."
   (interactive)
@@ -147,8 +152,9 @@
                (substitute-command-keys
                 "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'")))))))))
 
-(exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
-(exwm-input-set-key (kbd "C-c C-'") #'exwm-edit--compose)
+(when exwm-edit-bind-keys
+  (exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
+  (exwm-input-set-key (kbd "C-c C-'") #'exwm-edit--compose))
 
 (provide 'exwm-edit)
 
