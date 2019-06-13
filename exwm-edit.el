@@ -152,7 +152,7 @@
                (substitute-command-keys
                 "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'")))))))))
 
-(when exwm-edit-bind-keys
+(when exwm-edit-bind-default-keys
   (exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
   (exwm-input-set-key (kbd "C-c C-'") #'exwm-edit--compose))
 
