@@ -152,8 +152,10 @@
                (substitute-command-keys
                 "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'")))))))))
 
-(defun exwm-edit--compose-minibuffer ()
-  "Edit text in an EXWM app."
+(defun exwm-edit--compose-minibuffer (&optional completing-read-entries)
+  "Edit text in an EXWM app.
+If COMPLETING-READ-ENTRIES is non-nil, feed that list into the collection
+parameter of `completing-read'"
   (interactive)
   ;; flushing clipboard is required, otherwise `gui-get-selection` simply picks up what's in the clipboard (when nothing is actually selected in GUI)
   (gui-set-selection nil nil)
@@ -177,7 +179,7 @@
             (exwm-edit-mode 1)
             (let ((sel (gui-get-selection)))
 	      (exwm-edit--send-to-exwm-buffer
-	       (completing-read "exwm-edit: " nil nil nil sel)))))))))
+	       (completing-read "exwm-edit: " completing-read-entries nil nil sel)))))))))
 
 (exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
 (exwm-input-set-key (kbd "C-c C-'") #'exwm-edit--compose)
