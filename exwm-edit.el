@@ -62,10 +62,15 @@
   "Called when done editing buffer created by `exwm-edit--compose'."
   (interactive)
   (run-hooks 'exwm-edit-before-finish-hook)
-  (mark-whole-buffer)
-  (kill-region (region-beginning)
-               (region-end))
-  (kill-buffer-and-window)
+  (let ((text (buffer-substring-no-properties
+	       (point-min)
+	       (point-max))))
+    (kill-buffer-and-window)
+    (exwm-edit--send-to-exwm-buffer text)))
+
+(defun exwm-edit--send-to-exwm-buffer (text)
+  "Sends TEXT to the exwm window."
+  (kill-new text)
   (let ((buffer (switch-to-buffer exwm-edit--last-exwm-buffer)))
     (with-current-buffer buffer
       (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
@@ -140,12 +145,39 @@
               (exwm-edit-mode 1)
               (switch-to-buffer-other-window buffer)
               (let ((sel (gui-get-selection)))
-                (kill-new sel)
-                (insert sel))
+		(when sel
+                  (insert sel)))
               (setq-local
                header-line-format
                (substitute-command-keys
                 "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'")))))))))
+
+(defun exwm-edit--compose-minibuffer ()
+  "Edit text in an EXWM app."
+  (interactive)
+  ;; flushing clipboard is required, otherwise `gui-get-selection` simply picks up what's in the clipboard (when nothing is actually selected in GUI)
+  (gui-set-selection nil nil)
+  (let* ((title (exwm-edit--buffer-title (buffer-name)))
+         (inhibit-read-only t)
+         (save-interprogram-paste-before-kill t)
+         (selection-coding-system 'utf-8)             ; required for multilang-support
+         (sel (gui-get-selection))
+         (unmarked? (or (not sel)
+                        (string= (substring-no-properties (or sel ""))
+                                 (substring-no-properties (or (car kill-ring) ""))))))
+    (when (derived-mode-p 'exwm-mode)
+      (setq exwm-edit--last-exwm-buffer (buffer-name))
+      (unless (bound-and-true-p global-exwm-edit-mode)
+        (global-exwm-edit-mode 1))
+      (progn
+        (when unmarked? (exwm-input--fake-key ?\C-a))
+        (let ((buffer (get-buffer-create title)))
+          (with-current-buffer buffer
+            (run-hooks 'exwm-edit-compose-hook)
+            (exwm-edit-mode 1)
+            (let ((sel (gui-get-selection)))
+	      (exwm-edit--send-to-exwm-buffer
+	       (completing-read "exwm-edit: " nil nil nil sel)))))))))
 
 (exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
 (exwm-input-set-key (kbd "C-c C-'") #'exwm-edit--compose)
