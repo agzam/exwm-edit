@@ -58,6 +58,12 @@
   :type 'hook
   :group 'exwm-edit)
 
+(defcustom exwm-edit-split-below nil
+  "If non-nil `exwm-edit--compose' splits the window below.
+Otherwise split the window to the right."
+  :type 'boolean
+  :group 'exwm-edit)
+
 (defun exwm-edit--finish ()
   "Called when done editing buffer created by `exwm-edit--compose'."
   (interactive)
@@ -134,18 +140,20 @@
           (switch-to-buffer-other-window existing)
         (progn
           (when unmarked? (exwm-input--fake-key ?\C-a))
-          (let ((buffer (get-buffer-create title)))
-            (with-current-buffer buffer
-              (run-hooks 'exwm-edit-compose-hook)
-              (exwm-edit-mode 1)
-              (switch-to-buffer-other-window buffer)
-              (let ((sel (gui-get-selection)))
-                (kill-new sel)
-                (insert sel))
-              (setq-local
-               header-line-format
-               (substitute-command-keys
-                "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'")))))))))
+	  (select-window
+	   (if exwm-edit-split-below
+	       (split-window-below)
+	     (split-window-right)))
+	  (switch-to-buffer (get-buffer-create title))
+          (exwm-edit-mode 1)
+          (let ((sel (gui-get-selection)))
+            (kill-new sel)
+            (insert sel))
+          (setq-local
+           header-line-format
+           (substitute-command-keys
+            "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'"))
+          (run-hooks 'exwm-edit-compose-hook))))))
 
 (exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
 (exwm-input-set-key (kbd "C-c C-'") #'exwm-edit--compose)
