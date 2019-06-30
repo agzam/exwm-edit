@@ -88,6 +88,7 @@
     (define-key map (kbd "C-c '") 'exwm-edit--finish)
     (define-key map (kbd "C-c C-'") 'exwm-edit--finish)
     (define-key map (kbd "C-c C-c") 'exwm-edit--finish)
+    (define-key map [remap save-buffer] 'exwm-edit--finish)
     (define-key map (kbd "C-c C-k") 'exwm-edit--cancel)
     map)
   "Keymap for minor mode `exwm-edit-mode'.")
