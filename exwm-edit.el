@@ -43,6 +43,12 @@
 (defvar exwm-edit--last-exwm-buffer nil
   "Last buffer that invoked `exwm-edit'.")
 
+(defcustom exwm-edit-split-below nil
+  "If non-nil `exwm-edit--compose' splits the window below.
+Otherwise split the window to the right."
+  :type 'boolean
+  :group 'exwm-edit)
+
 (defcustom exwm-edit-compose-hook nil
   "Customizable hook, runs after `exwm-edit--compose' buffer created."
   :type 'hook
@@ -79,7 +85,8 @@
   (let ((buffer (switch-to-buffer exwm-edit--last-exwm-buffer)))
     (with-current-buffer buffer
       (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
-      (run-at-time "0.05 sec" nil (lambda () (exwm-input--fake-key ?\C-v)))
+      ;;(run-at-time "0.05 sec" nil (lambda () (exwm-input--fake-key ?\C-v)))
+      (exwm-input--fake-key ?\C-v)
       (setq exwm-edit--last-exwm-buffer nil))))
 
 (defun exwm-edit--cancel ()
@@ -148,7 +155,11 @@
             (with-current-buffer buffer
               (run-hooks 'exwm-edit-compose-hook)
               (exwm-edit-mode 1)
-              (switch-to-buffer-other-window buffer)
+	      (select-window
+	       (if exwm-edit-split-below
+		   (split-window-below)
+		 (split-window-right)))
+	      (switch-to-buffer (get-buffer-create title))
               (let ((sel (gui-get-selection)))
 		(when sel
                   (insert sel)))
