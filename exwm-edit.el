@@ -48,6 +48,11 @@
   :type 'hook
   :group 'exwm-edit)
 
+(defcustom exwm-edit-compose-minibuffer-hook nil
+  "Customizable hook, runs after `exwm-edit--compose-minibuffer' buffer created."
+  :type 'hook
+  :group 'exwm-edit)
+
 (defcustom exwm-edit-before-finish-hook nil
   "Customizable hook, runs before `exwm-edit--finish'."
   :type 'hook
@@ -173,13 +178,10 @@ parameter of `completing-read'"
         (global-exwm-edit-mode 1))
       (progn
         (when unmarked? (exwm-input--fake-key ?\C-a))
-        (let ((buffer (get-buffer-create title)))
-          (with-current-buffer buffer
-            (run-hooks 'exwm-edit-compose-hook)
-            (exwm-edit-mode 1)
-            (let ((sel (gui-get-selection)))
-	      (exwm-edit--send-to-exwm-buffer
-	       (completing-read "exwm-edit: " completing-read-entries nil nil sel)))))))))
+        (run-hooks 'exwm-edit-compose-minibuffer-hook)
+        (let ((sel (gui-get-selection)))
+	  (exwm-edit--send-to-exwm-buffer
+	   (completing-read "exwm-edit: " completing-read-entries nil nil sel)))))))
 
 (exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
 (exwm-input-set-key (kbd "C-c C-'") #'exwm-edit--compose)
