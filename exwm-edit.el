@@ -164,7 +164,8 @@ Otherwise split the window to the right."
 			  (setq exwm-edit-last-kill exwm-kill-ring-car)))
 
 		      (when should-yank
-			(ignore-errors (yank)))))))
+			(ignore-errors (yank))
+			(run-hooks 'post-command-hook))))))
 
 (defun exwm-edit--compose ()
   "Edit text in an EXWM app."
