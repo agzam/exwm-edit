@@ -167,8 +167,9 @@ Otherwise split the window to the right."
 			(ignore-errors (yank))
 			(run-hooks 'post-command-hook))))))
 
-(defun exwm-edit--compose ()
-  "Edit text in an EXWM app."
+(defun exwm-edit--compose (&optional no-copy)
+  "Edit text in an EXWM app.
+If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
   (interactive)
   (let* ((title (exwm-edit--buffer-title (buffer-name)))
          (existing (get-buffer title))
@@ -196,7 +197,8 @@ Otherwise split the window to the right."
 	      (setq-local header-line-format
 			  (substitute-command-keys
 			   "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'"))
-	      (exwm-edit--yank))))))))
+	      (unless no-copy
+		(exwm-edit--yank)))))))))
 
 (defun exwm-edit--compose-minibuffer (&optional completing-read-entries no-copy)
   "Edit text in an EXWM app.
@@ -219,7 +221,7 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
 	  (exwm-edit--yank))
 	(run-hooks 'exwm-edit-compose-minibuffer-hook)
 	(exwm-edit--send-to-exwm-buffer
-	 (completing-read "exwm-edit: " completing-read-entries nil nil nil))))))
+	 (completing-read "exwm-edit: " completing-read-entries))))))
 
 (when exwm-edit-bind-default-keys
   (exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
