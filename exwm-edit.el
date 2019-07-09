@@ -154,7 +154,8 @@ Otherwise split the window to the right."
 		      ;; Decide if the last kill had the same contents as this.
 		      ;; (car kill-ring) doesn't work so we have to do it this way
 		      (with-temp-buffer
-			(yank)
+			;; If kill ring is nil, yank can throw an error, ignore those
+			(ignore-errors (yank))
 			(let ((exwm-kill-ring-car (buffer-substring-no-properties
 						   (point-min)
 						   (point-max))))
@@ -163,7 +164,7 @@ Otherwise split the window to the right."
 			  (setq exwm-edit-last-kill exwm-kill-ring-car)))
 
 		      (when should-yank
-			(yank))))))
+			(ignore-errors (yank)))))))
 
 (defun exwm-edit--compose ()
   "Edit text in an EXWM app."
