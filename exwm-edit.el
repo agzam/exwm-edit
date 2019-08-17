@@ -57,10 +57,10 @@ If this is too low an old yank may be used instead.")
   "The delay to use when pasting text back into the exwm buffer.
 If this is too low the text might not be pasted into the exwm buffer")
 
-(defcustom exwm-edit-split-below nil
-  "If non-nil `exwm-edit--compose' splits the window below.
-Otherwise split the window to the right."
-  :type 'boolean
+(defcustom exwm-edit-split nil
+  "If non-nil `exwm-edit--compose' splits the window.
+possible values right/below/nil/t."
+  :type 'string
   :group 'exwm-edit)
 
 (defcustom exwm-edit-bind-default-keys t
@@ -88,20 +88,31 @@ Otherwise split the window to the right."
   :type 'hook
   :group 'exwm-edit)
 
+(defun exwm-edit--switch ()
+  "Restore buffer/window layout after leaving the edit buffer.
+Depending on `exwm-edit-split' and amount of visible windows on the screen."
+  (funcall
+   (if (or (one-window-p) exwm-edit-split) 'switch-to-buffer
+     'switch-to-buffer-other-window)
+   exwm-edit--last-exwm-buffer))
+
 (defun exwm-edit--finish ()
   "Called when done editing buffer created by `exwm-edit--compose'."
   (interactive)
   (run-hooks 'exwm-edit-before-finish-hook)
   (let ((text (buffer-substring-no-properties
 	       (point-min)
-	       (point-max))))
-    (kill-buffer-and-window)
-    (exwm-edit--send-to-exwm-buffer text)))
+	       (point-max)))
+	(current-buffer (buffer-name)))
+    (when exwm-edit-split
+      (kill-buffer-and-window))
+    (exwm-edit--send-to-exwm-buffer text)
+    (unless exwm-edit-split (kill-buffer current-buffer))))
 
 (defun exwm-edit--send-to-exwm-buffer (text)
   "Sends TEXT to the exwm window."
   (kill-new text)
-  (switch-to-buffer exwm-edit--last-exwm-buffer)
+  (exwm-edit--switch)
   (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
   (run-with-timer exwm-edit-paste-delay nil (lambda () (exwm-input--fake-key ?\C-v)))
   (setq exwm-edit--last-exwm-buffer nil))
@@ -110,10 +121,13 @@ Otherwise split the window to the right."
   "Called to cancell editing in a buffer created by `exwm-edit--compose'."
   (interactive)
   (run-hooks 'exwm-edit-before-cancel-hook)
-  (kill-buffer-and-window)
-  (switch-to-buffer exwm-edit--last-exwm-buffer)
-  (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
-  (exwm-input--fake-key 'right)
+  (when exwm-edit-split
+      (kill-buffer-and-window))
+  (let* ((current-buffer (buffer-name)))
+    (exwm-edit--switch)
+    (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
+    (exwm-input--fake-key 'right)
+    (unless exwm-edit-split (kill-buffer current-buffer)))
   (setq exwm-edit--last-exwm-buffer nil))
 
 (defvar exwm-edit-mode-map
@@ -190,9 +204,10 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
 	      (run-hooks 'exwm-edit-compose-hook)
 	      (exwm-edit-mode 1)
 	      (select-window
-	       (if exwm-edit-split-below
-		   (split-window-below)
-		 (split-window-right)))
+	       (pcase exwm-edit-split
+		 ((or 't "right") (split-window-right))
+		 ("below" (split-window-below))
+		 (- (next-window))))
 	      (switch-to-buffer (get-buffer-create title))
 	      (setq-local header-line-format
 			  (substitute-command-keys
