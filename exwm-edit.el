@@ -43,8 +43,38 @@
 (defvar exwm-edit--last-exwm-buffer nil
   "Last buffer that invoked `exwm-edit'.")
 
+(defvar exwm-edit-last-kill nil
+  "Used to check if the text box is empty.
+If this is the same value as (car KILL-RING) returns after copying the text-box,
+the text box might be empty (because empty text boxes don't add to the KILL-RING).")
+
+(defvar exwm-edit-yank-delay 0.3
+  "The delay to use when yanking into the Emacs buffer.
+It takes a while for copy in exwm to transfer to Emacs yank.
+If this is too low an old yank may be used instead.")
+
+(defvar exwm-edit-paste-delay 0.05
+  "The delay to use when pasting text back into the exwm buffer.
+If this is too low the text might not be pasted into the exwm buffer")
+
+(defcustom exwm-edit-split-below nil
+  "If non-nil `exwm-edit--compose' splits the window below.
+Otherwise split the window to the right."
+  :type 'boolean
+  :group 'exwm-edit)
+
+(defcustom exwm-edit-bind-default-keys t
+  "If non-nil bind default keymaps on load."
+  :type 'boolean
+  :group 'exwm-edit)
+
 (defcustom exwm-edit-compose-hook nil
   "Customizable hook, runs after `exwm-edit--compose' buffer created."
+  :type 'hook
+  :group 'exwm-edit)
+
+(defcustom exwm-edit-compose-minibuffer-hook nil
+  "Customizable hook, runs after `exwm-edit--compose-minibuffer' buffer created."
   :type 'hook
   :group 'exwm-edit)
 
@@ -62,32 +92,36 @@
   "Called when done editing buffer created by `exwm-edit--compose'."
   (interactive)
   (run-hooks 'exwm-edit-before-finish-hook)
-  (mark-whole-buffer)
-  (kill-region (region-beginning)
-               (region-end))
-  (kill-buffer-and-window)
-  (let ((buffer (switch-to-buffer exwm-edit--last-exwm-buffer)))
-    (with-current-buffer buffer
-      (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
-      (run-at-time "0.05 sec" nil (lambda () (exwm-input--fake-key ?\C-v)))
-      (setq exwm-edit--last-exwm-buffer nil))))
+  (let ((text (buffer-substring-no-properties
+	       (point-min)
+	       (point-max))))
+    (kill-buffer-and-window)
+    (exwm-edit--send-to-exwm-buffer text)))
+
+(defun exwm-edit--send-to-exwm-buffer (text)
+  "Sends TEXT to the exwm window."
+  (kill-new text)
+  (switch-to-buffer exwm-edit--last-exwm-buffer)
+  (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
+  (run-with-timer exwm-edit-paste-delay nil (lambda () (exwm-input--fake-key ?\C-v)))
+  (setq exwm-edit--last-exwm-buffer nil))
 
 (defun exwm-edit--cancel ()
   "Called to cancell editing in a buffer created by `exwm-edit--compose'."
   (interactive)
   (run-hooks 'exwm-edit-before-cancel-hook)
   (kill-buffer-and-window)
-  (let ((buffer (switch-to-buffer exwm-edit--last-exwm-buffer)))
-    (with-current-buffer buffer
-      (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
-      (exwm-input--fake-key 'right)
-      (setq exwm-edit--last-exwm-buffer nil))))
+  (switch-to-buffer exwm-edit--last-exwm-buffer)
+  (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
+  (exwm-input--fake-key 'right)
+  (setq exwm-edit--last-exwm-buffer nil))
 
 (defvar exwm-edit-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c '") 'exwm-edit--finish)
     (define-key map (kbd "C-c C-'") 'exwm-edit--finish)
     (define-key map (kbd "C-c C-c") 'exwm-edit--finish)
+    (define-key map [remap save-buffer] 'exwm-edit--finish)
     (define-key map (kbd "C-c C-k") 'exwm-edit--cancel)
     map)
   "Keymap for minor mode `exwm-edit-mode'.")
@@ -112,20 +146,36 @@
   exwm-edit-mode exwm-edit--turn-on-edit-mode
   :require 'exwm-edit)
 
-(defun exwm-edit--compose ()
-  "Edit text in an EXWM app."
+(defun exwm-edit--yank ()
+  "Yank text to Emacs buffer with check for empty strings."
+  (run-with-timer exwm-edit-yank-delay nil
+		  (lambda ()
+		    (let ((should-yank))
+		      ;; Decide if the last kill had the same contents as this.
+		      ;; (car kill-ring) doesn't work so we have to do it this way
+		      (with-temp-buffer
+			;; If kill ring is nil, yank can throw an error, ignore those
+			(ignore-errors (yank))
+			(let ((exwm-kill-ring-car (buffer-substring-no-properties
+						   (point-min)
+						   (point-max))))
+			  (unless (or (string= exwm-kill-ring-car "") (string= exwm-kill-ring-car exwm-edit-last-kill))
+			    (setq should-yank t))
+			  (setq exwm-edit-last-kill exwm-kill-ring-car)))
+
+		      (when should-yank
+			(ignore-errors (yank))
+			(run-hooks 'post-command-hook))))))
+
+(defun exwm-edit--compose (&optional no-copy)
+  "Edit text in an EXWM app.
+If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
   (interactive)
-  ;; flushing clipboard is required, otherwise `gui-get-selection` simply picks up what's in the clipboard (when nothing is actually selected in GUI)
-  (gui-set-selection nil nil)
   (let* ((title (exwm-edit--buffer-title (buffer-name)))
          (existing (get-buffer title))
          (inhibit-read-only t)
          (save-interprogram-paste-before-kill t)
-         (selection-coding-system 'utf-8)             ; required for multilang-support
-         (sel (gui-get-selection))
-         (unmarked? (or (not sel)
-                        (string= (substring-no-properties (or sel ""))
-                                 (substring-no-properties (or (car kill-ring) ""))))))
+         (selection-coding-system 'utf-8))             ; required for multilang-support
     (when (derived-mode-p 'exwm-mode)
       (setq exwm-edit--last-exwm-buffer (buffer-name))
       (unless (bound-and-true-p global-exwm-edit-mode)
@@ -133,22 +183,49 @@
       (if existing
           (switch-to-buffer-other-window existing)
         (progn
-          (when unmarked? (exwm-input--fake-key ?\C-a))
-          (let ((buffer (get-buffer-create title)))
-            (with-current-buffer buffer
-              (run-hooks 'exwm-edit-compose-hook)
-              (exwm-edit-mode 1)
-              (switch-to-buffer-other-window buffer)
-              (let ((sel (gui-get-selection)))
-                (kill-new sel)
-                (insert sel))
-              (setq-local
-               header-line-format
-               (substitute-command-keys
-                "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'")))))))))
+	  (exwm-input--fake-key ?\C-a)
+	  (exwm-input--fake-key ?\C-c)
+	  (let ((buffer (get-buffer-create title)))
+	    (with-current-buffer buffer
+	      (run-hooks 'exwm-edit-compose-hook)
+	      (exwm-edit-mode 1)
+	      (select-window
+	       (if exwm-edit-split-below
+		   (split-window-below)
+		 (split-window-right)))
+	      (switch-to-buffer (get-buffer-create title))
+	      (setq-local header-line-format
+			  (substitute-command-keys
+			   "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'"))
+	      (unless no-copy
+		(exwm-edit--yank)))))))))
 
-(exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
-(exwm-input-set-key (kbd "C-c C-'") #'exwm-edit--compose)
+(defun exwm-edit--compose-minibuffer (&optional completing-read-entries no-copy)
+  "Edit text in an EXWM app.
+If COMPLETING-READ-ENTRIES is non-nil, feed that list into the collection
+parameter of `completing-read'
+If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
+  (interactive)
+  (let* ((title (exwm-edit--buffer-title (buffer-name)))
+         (inhibit-read-only t)
+         (save-interprogram-paste-before-kill t)
+         (selection-coding-system 'utf-8))             ; required for multilang-support
+    (when (derived-mode-p 'exwm-mode)
+      (setq exwm-edit--last-exwm-buffer (buffer-name))
+      (unless (bound-and-true-p global-exwm-edit-mode)
+        (global-exwm-edit-mode 1))
+      (progn
+        (exwm-input--fake-key ?\C-a)
+	(unless no-copy
+	  (exwm-input--fake-key ?\C-c)
+	  (exwm-edit--yank))
+	(run-hooks 'exwm-edit-compose-minibuffer-hook)
+	(exwm-edit--send-to-exwm-buffer
+	 (completing-read "exwm-edit: " completing-read-entries))))))
+
+(when exwm-edit-bind-default-keys
+  (exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
+  (exwm-input-set-key (kbd "C-c C-'") #'exwm-edit--compose))
 
 (provide 'exwm-edit)
 
