@@ -181,6 +181,15 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
 			(ignore-errors (yank))
 			(run-hooks 'post-command-hook))))))
 
+(defun exwm-edit--display-buffer (buffer)
+  "Display BUFFER according to user settings."
+  (select-window
+   (pcase exwm-edit-split
+     ((or 't "right") (split-window-right))
+     ("below" (split-window-below))
+     (_ (next-window))))
+  (switch-to-buffer buffer))
+
 (defun exwm-edit--compose (&optional no-copy)
   "Edit text in an EXWM app.
 If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
@@ -196,24 +205,17 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
         (global-exwm-edit-mode 1))
       (if existing
           (switch-to-buffer-other-window existing)
-        (progn
-	  (exwm-input--fake-key ?\C-a)
-	  (exwm-input--fake-key ?\C-c)
-	  (let ((buffer (get-buffer-create title)))
-	    (with-current-buffer buffer
-	      (run-hooks 'exwm-edit-compose-hook)
-	      (exwm-edit-mode 1)
-	      (select-window
-	       (pcase exwm-edit-split
-		 ((or 't "right") (split-window-right))
-		 ("below" (split-window-below))
-		 (- (next-window))))
-	      (switch-to-buffer (get-buffer-create title))
-	      (setq-local header-line-format
-			  (substitute-command-keys
-			   "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'"))
-	      (unless no-copy
-		(exwm-edit--yank)))))))))
+        (exwm-input--fake-key ?\C-a)
+        (exwm-input--fake-key ?\C-c)
+        (with-current-buffer (get-buffer-create title)
+          (run-hooks 'exwm-edit-compose-hook)
+          (exwm-edit-mode 1)
+          (exwm-edit--display-buffer (current-buffer))
+          (setq-local header-line-format
+                      (substitute-command-keys
+                       "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'"))
+          (unless no-copy
+            (exwm-edit--yank)))))))
 
 (defun exwm-edit--compose-minibuffer (&optional completing-read-entries no-copy)
   "Edit text in an EXWM app.
