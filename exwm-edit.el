@@ -5,8 +5,8 @@
 ;; Created: 2018-05-16
 ;; Keywords: convenience
 ;; License: GPL v3
-;; Package-Requires: ((emacs "24.4"))
-;; Version: 0.0.1
+;; Package-Requires: ((emacs "25.1"))
+;; Version: 0.0.2
 
 ;;; Commentary:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -57,10 +57,20 @@ If this is too low an old yank may be used instead.")
   "The delay to use when pasting text back into the exwm buffer.
 If this is too low the text might not be pasted into the exwm buffer")
 
+(defvar exwm-edit-clean-kill-ring-delay 0.05
+  "The delay to clean the `kill-ring' after pasting the text back 
+to the exwm-buffer.")
+
 (defcustom exwm-edit-split nil
   "If non-nil `exwm-edit--compose' splits the window.
 possible values right/below/nil/t."
   :type 'string
+  :group 'exwm-edit)
+
+(defcustom exwm-edit-copy-over-contents t
+  "If non-nil, copy over the contents of the exwm text box. 
+This is then inserted into the `exwm-edit' buffer."
+  :type 'boolean
   :group 'exwm-edit)
 
 (defcustom exwm-edit-bind-default-keys t
@@ -114,7 +124,17 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
   (kill-new text)
   (exwm-edit--switch)
   (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
-  (run-with-timer exwm-edit-paste-delay nil (lambda () (exwm-input--fake-key ?\C-v)))
+  (if (string= text "")
+      ;; If everything is deleted in the exwm-edit buffer, then simply delete the selected text in the exwm buffer
+      (run-with-timer exwm-edit-paste-delay nil (lambda () (exwm-input--fake-key 'delete)))
+
+    (run-with-timer exwm-edit-paste-delay nil (lambda () (exwm-input--fake-key ?\C-v)
+
+						;; Clean up the kill ring
+						;; It needs to be run on a timer because of some reason
+						(run-with-timer exwm-edit-clean-kill-ring-delay nil (lambda ()
+												      (pop kill-ring)
+												      (kill-new (car kill-ring)))))))
   (setq exwm-edit--last-exwm-buffer nil))
 
 (defun exwm-edit--cancel ()
@@ -122,7 +142,7 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
   (interactive)
   (run-hooks 'exwm-edit-before-cancel-hook)
   (when exwm-edit-split
-      (kill-buffer-and-window))
+    (kill-buffer-and-window))
   (let* ((current-buffer (buffer-name)))
     (exwm-edit--switch)
     (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
@@ -164,22 +184,12 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
   "Yank text to Emacs buffer with check for empty strings."
   (run-with-timer exwm-edit-yank-delay nil
 		  (lambda ()
-		    (let ((should-yank))
-		      ;; Decide if the last kill had the same contents as this.
-		      ;; (car kill-ring) doesn't work so we have to do it this way
-		      (with-temp-buffer
-			;; If kill ring is nil, yank can throw an error, ignore those
-			(ignore-errors (yank))
-			(let ((exwm-kill-ring-car (buffer-substring-no-properties
-						   (point-min)
-						   (point-max))))
-			  (unless (or (string= exwm-kill-ring-car "") (string= exwm-kill-ring-car exwm-edit-last-kill))
-			    (setq should-yank t))
-			  (setq exwm-edit-last-kill exwm-kill-ring-car)))
-
-		      (when should-yank
-			(ignore-errors (yank))
-			(run-hooks 'post-command-hook))))))
+		    (let ((clip (substring-no-properties (gui-get-selection 'CLIPBOARD))))
+		      (unless (and exwm-edit-last-kill (string= exwm-edit-last-kill clip))
+			(yank)
+			(run-hooks 'post-command-hook)
+			;; Clean up the last kill so that the kill ring doesn't become cluttered with exwm-edit text
+			(pop kill-ring))))))
 
 (defun exwm-edit--display-buffer (buffer)
   "Display BUFFER according to user settings."
@@ -206,7 +216,9 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
       (if existing
           (switch-to-buffer-other-window existing)
         (exwm-input--fake-key ?\C-a)
-        (exwm-input--fake-key ?\C-c)
+        (unless (or no-copy (not exwm-edit-copy-over-contents))
+	  (setq exwm-edit-last-kill (substring-no-properties (gui-get-selection 'CLIPBOARD)))
+	  (exwm-input--fake-key ?\C-c))
         (with-current-buffer (get-buffer-create title)
           (run-hooks 'exwm-edit-compose-hook)
           (exwm-edit-mode 1)
@@ -214,8 +226,8 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
           (setq-local header-line-format
                       (substitute-command-keys
                        "Edit, then exit with `\\[exwm-edit--finish]' or cancel with \ `\\[exwm-edit--cancel]'"))
-          (unless no-copy
-            (exwm-edit--yank)))))))
+          (unless (or no-copy (not exwm-edit-copy-over-contents))
+	    (exwm-edit--yank)))))))
 
 (defun exwm-edit--compose-minibuffer (&optional completing-read-entries no-copy)
   "Edit text in an EXWM app.
@@ -233,7 +245,8 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
         (global-exwm-edit-mode 1))
       (progn
         (exwm-input--fake-key ?\C-a)
-	(unless no-copy
+	(unless (or no-copy (not exwm-edit-copy-over-contents))
+	  (setq exwm-edit-last-kill (substring-no-properties (gui-get-selection 'CLIPBOARD)))
 	  (exwm-input--fake-key ?\C-c)
 	  (exwm-edit--yank))
 	(run-hooks 'exwm-edit-compose-minibuffer-hook)
