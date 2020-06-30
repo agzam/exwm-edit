@@ -148,7 +148,8 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
     (exwm-input--set-focus (exwm--buffer->id (window-buffer (selected-window))))
     (exwm-input--fake-key 'right)
     (unless exwm-edit-split (kill-buffer current-buffer)))
-  (setq exwm-edit--last-exwm-buffer nil))
+  (setq exwm-edit--last-exwm-buffer nil)
+  (kill-new (car kill-ring)))
 
 (defvar exwm-edit-mode-map
   (let ((map (make-sparse-keymap)))
@@ -188,9 +189,7 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
 			   (clip (when clip-raw (substring-no-properties clip-raw))))
 		      (when clip
 			(unless (and exwm-edit-last-kill (string= exwm-edit-last-kill clip))
-			  (insert clip)
-			  ;; Since we ran C-c before this, clean up the last kill so that the kill ring doesn't become cluttered with exwm-edit text
-			  (pop kill-ring)))))))
+			  (insert clip)))))))
 
 (defun exwm-edit--display-buffer (buffer)
   "Display BUFFER according to user settings."
