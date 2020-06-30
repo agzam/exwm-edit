@@ -57,7 +57,7 @@ If this is too low an old yank may be used instead.")
   "The delay to use when pasting text back into the exwm buffer.
 If this is too low the text might not be pasted into the exwm buffer")
 
-(defvar exwm-edit-clean-kill-ring-delay 0.05
+(defvar exwm-edit-clean-kill-ring-delay 0.10
   "The delay to clean the `kill-ring' after pasting the text back 
 to the exwm-buffer.")
 
@@ -128,8 +128,8 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
       ;; If everything is deleted in the exwm-edit buffer, then simply delete the selected text in the exwm buffer
       (run-with-timer exwm-edit-paste-delay nil (lambda () (exwm-input--fake-key 'delete)))
 
-    (run-with-timer exwm-edit-paste-delay nil (lambda () (exwm-input--fake-key ?\C-v)
-
+    (run-with-timer exwm-edit-paste-delay nil (lambda ()
+						(exwm-input--fake-key ?\C-v)
 						;; Clean up the kill ring
 						;; It needs to be run on a timer because of some reason
 						(run-with-timer exwm-edit-clean-kill-ring-delay nil (lambda ()
@@ -186,9 +186,8 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
 		  (lambda ()
 		    (let ((clip (substring-no-properties (gui-get-selection 'CLIPBOARD))))
 		      (unless (and exwm-edit-last-kill (string= exwm-edit-last-kill clip))
-			(yank)
-			(run-hooks 'post-command-hook)
-			;; Clean up the last kill so that the kill ring doesn't become cluttered with exwm-edit text
+			(insert clip)
+			;; Since we ran C-c before this, clean up the last kill so that the kill ring doesn't become cluttered with exwm-edit text
 			(pop kill-ring))))))
 
 (defun exwm-edit--display-buffer (buffer)
