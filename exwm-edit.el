@@ -134,7 +134,10 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
 						;; It needs to be run on a timer because of some reason
 						(run-with-timer exwm-edit-clean-kill-ring-delay nil (lambda ()
 												      (pop kill-ring)
-												      (kill-new (car kill-ring)))))))
+												      ;; Kill-ring weirdness
+												      (if kill-ring
+													  (kill-new (car kill-ring))
+													(kill-new "")))))))
   (setq exwm-edit--last-exwm-buffer nil))
 
 (defun exwm-edit--cancel ()
@@ -149,7 +152,8 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
     (exwm-input--fake-key 'right)
     (unless exwm-edit-split (kill-buffer current-buffer)))
   (setq exwm-edit--last-exwm-buffer nil)
-  (kill-new (car kill-ring)))
+  (when kill-ring
+    (kill-new (car kill-ring))))
 
 (defvar exwm-edit-mode-map
   (let ((map (make-sparse-keymap)))
