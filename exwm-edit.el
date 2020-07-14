@@ -181,9 +181,14 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
                  (buffer-name (current-buffer)))
     (exwm-edit-mode t)))
 
-(define-global-minor-mode global-exwm-edit-mode
-  exwm-edit-mode exwm-edit--turn-on-edit-mode
-  :require 'exwm-edit)
+;;;###autoload
+(defun global-exwm-edit-mode (&optional _) "This function is obsolete.")
+
+;;;###autoload
+(make-obsolete
+ 'global-exwm-edit-mode
+ "Exwm-edit does not need `global-exwm-edit-mode' to work properly anymore."
+ "Was probably made obsolete before 0.0.2")
 
 (defun exwm-edit--yank ()
   "Yank text to Emacs buffer with check for empty strings."
@@ -215,8 +220,6 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
          (selection-coding-system 'utf-8))             ; required for multilang-support
     (when (derived-mode-p 'exwm-mode)
       (setq exwm-edit--last-exwm-buffer (buffer-name))
-      (unless (bound-and-true-p global-exwm-edit-mode)
-        (global-exwm-edit-mode 1))
       (if existing
           (switch-to-buffer-other-window existing)
         (exwm-input--fake-key ?\C-a)
@@ -240,14 +243,11 @@ If COMPLETING-READ-ENTRIES is non-nil, feed that list into the collection
 parameter of `completing-read'
 If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
   (interactive)
-  (let* ((title (exwm-edit--buffer-title (buffer-name)))
-         (inhibit-read-only t)
+  (let* ((inhibit-read-only t)
          (save-interprogram-paste-before-kill t)
          (selection-coding-system 'utf-8))             ; required for multilang-support
     (when (derived-mode-p 'exwm-mode)
       (setq exwm-edit--last-exwm-buffer (buffer-name))
-      (unless (bound-and-true-p global-exwm-edit-mode)
-        (global-exwm-edit-mode 1))
       (progn
         (exwm-input--fake-key ?\C-a)
 	(unless (or no-copy (not exwm-edit-copy-over-contents))
