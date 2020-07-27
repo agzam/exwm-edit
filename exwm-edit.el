@@ -181,6 +181,8 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
                  (buffer-name (current-buffer)))
     (exwm-edit-mode t)))
 
+;; global-minor-mode is to re-activate exwm-mode-map when major mode of
+;; exwm-edit buffer gets changed manually.
 (define-global-minor-mode global-exwm-edit-mode
   exwm-edit-mode exwm-edit--turn-on-edit-mode
   :require 'exwm-edit)
