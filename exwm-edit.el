@@ -191,7 +191,7 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
   "Yank text to Emacs buffer with check for empty strings."
   (run-with-timer exwm-edit-yank-delay nil
 		  (lambda ()
-		    (let* ((clip-raw (gui-get-selection 'CLIPBOARD))
+		    (let* ((clip-raw (gui-get-selection 'CLIPBOARD 'UTF8_STRING))
 			   (clip (when clip-raw (substring-no-properties clip-raw))))
 		      (when clip
 			(unless (and exwm-edit-last-kill (string= exwm-edit-last-kill clip))
@@ -223,8 +223,8 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
           (switch-to-buffer-other-window existing)
         (exwm-input--fake-key ?\C-a)
         (unless (or no-copy (not exwm-edit-copy-over-contents))
-	  (when (gui-get-selection 'CLIPBOARD)
-	    (setq exwm-edit-last-kill (substring-no-properties (gui-get-selection 'CLIPBOARD))))
+	  (when (gui-get-selection 'CLIPBOARD 'UTF8_STRING)
+	    (setq exwm-edit-last-kill (substring-no-properties (gui-get-selection 'CLIPBOARD 'UTF8_STRING))))
 	  (exwm-input--fake-key ?\C-c))
         (with-current-buffer (get-buffer-create title)
           (run-hooks 'exwm-edit-compose-hook)
@@ -253,8 +253,8 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
       (progn
         (exwm-input--fake-key ?\C-a)
 	(unless (or no-copy (not exwm-edit-copy-over-contents))
-	  (when (gui-get-selection 'CLIPBOARD)
-	    (setq exwm-edit-last-kill (substring-no-properties (gui-get-selection 'CLIPBOARD))))
+	  (when (gui-get-selection 'CLIPBOARD 'UTF8_STRING)
+	    (setq exwm-edit-last-kill (substring-no-properties (gui-get-selection 'CLIPBOARD 'UTF8_STRING))))
 	  (exwm-input--fake-key ?\C-c)
 	  (exwm-edit--yank))
 	(run-hooks 'exwm-edit-compose-minibuffer-hook)
