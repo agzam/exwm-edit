@@ -76,10 +76,6 @@ possible values right/below/nil/t."
 This is then inserted into the `exwm-edit' buffer."
   :type 'boolean)
 
-(defcustom exwm-edit-bind-default-keys t
-  "If non-nil bind default keymaps on load."
-  :type 'boolean)
-
 (defcustom exwm-edit-compose-hook nil
   "Customizable hook, runs after `exwm-edit--compose' buffer created."
   :type 'hook)
@@ -260,10 +256,6 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
 	(run-hooks 'exwm-edit-compose-minibuffer-hook)
 	(exwm-edit--send-to-exwm-buffer
 	 (completing-read "exwm-edit: " completing-read-entries))))))
-
-(when exwm-edit-bind-default-keys
-  (exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
-  (exwm-input-set-key (kbd "C-c C-'") #'exwm-edit--compose))
 
 (provide 'exwm-edit)
 
