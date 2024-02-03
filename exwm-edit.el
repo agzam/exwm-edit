@@ -163,23 +163,21 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
   "Minor mode enabled in `exwm-edit--compose' buffer"
   :init-value nil
   :lighter " exwm-edit"
-  :keymap exwm-edit-mode-map)
+  :keymap exwm-edit-mode-map
+  (if exwm-edit-mode
+      ;; Re-enable the minor mode when changing major mode so the
+      ;; major mode's keybindings don't shadow `exwm-edit-mode-map'.
+      (add-hook 'after-change-major-mode-hook
+                #'exwm-edit-mode nil 'local)
+    (remove-hook 'after-change-major-mode-hook
+                 #'exwm-edit-mode 'local)))
+;; Putting permanent-local means that switching major-mode doesn't
+;; reset the variable `exwm-edit-mode' to nil.
+(put 'exwm-edit-mode 'permanent-local t)
 
 (defun exwm-edit--buffer-title (str)
   "`exwm-edit' buffer title based on STR."
   (concat "*exwm-edit " str " *"))
-
-(defun exwm-edit--turn-on-edit-mode ()
-  "Turn on `exwm-edit-mode' if the buffer was created by `exwm-edit--compose'."
-  (when (string= (exwm-edit--buffer-title exwm-edit--last-exwm-buffer)
-                 (buffer-name (current-buffer)))
-    (exwm-edit-mode t)))
-
-;; global-minor-mode is to re-activate exwm-mode-map when major mode of
-;; exwm-edit buffer gets changed manually.
-(define-global-minor-mode global-exwm-edit-mode
-  exwm-edit-mode exwm-edit--turn-on-edit-mode
-  :require 'exwm-edit)
 
 (defun exwm-edit--yank ()
   "Yank text to Emacs buffer with check for empty strings."
@@ -212,8 +210,6 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
          (selection-coding-system 'utf-8))             ; required for multilang-support
     (when (derived-mode-p 'exwm-mode)
       (setq exwm-edit--last-exwm-buffer (buffer-name))
-      (unless (bound-and-true-p global-exwm-edit-mode)
-        (global-exwm-edit-mode 1))
       (if existing
           (switch-to-buffer-other-window existing)
         (exwm-input--fake-key ?\C-a)
@@ -244,8 +240,6 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
          (selection-coding-system 'utf-8))             ; required for multilang-support
     (when (derived-mode-p 'exwm-mode)
       (setq exwm-edit--last-exwm-buffer (buffer-name))
-      (unless (bound-and-true-p global-exwm-edit-mode)
-        (global-exwm-edit-mode 1))
       (progn
         (exwm-input--fake-key ?\C-a)
 	(unless (or no-copy (not exwm-edit-copy-over-contents))
