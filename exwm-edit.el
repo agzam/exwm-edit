@@ -96,9 +96,7 @@ This is then inserted into the `exwm-edit' buffer."
   "Called when done editing buffer created by `exwm-edit--compose'."
   (interactive)
   (run-hooks 'exwm-edit-before-finish-hook)
-  (let ((text (buffer-substring-no-properties
-	       (point-min)
-	       (point-max))))
+  (let ((text (filter-buffer-substring (point-min) (point-max))))
     (kill-buffer)
     (exwm-edit--send-to-exwm-buffer text)))
 
