@@ -162,6 +162,7 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
 (define-minor-mode exwm-edit-mode
   "Minor mode enabled in `exwm-edit--compose' buffer"
   :init-value nil
+  :interactive nil
   :lighter " exwm-edit"
   :keymap exwm-edit-mode-map
   (if exwm-edit-mode
