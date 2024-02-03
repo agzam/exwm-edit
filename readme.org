@@ -20,23 +20,25 @@
   - edit and modify code snippets with ease in Slack;
   - etc. and etc.
 
-* Keybindings
-  Default keybindings are just like in Org-mode (for editing source blocks):
-
-  ~C-c '​~ or ~C-c C-'​~  - edit
-
-  ~C-c '​~ or ~C-c C-c~  - finish editing
-
-  ~C-c C-k~ - cancel editing
 * Customization
-  You can use hooks to set desired mode, etc, e.g.:
 
-  #+begin_src emacs-lisp
-    (use-package exwm-edit
-      :config
-      (defun ag-exwm/on-exwm-edit-compose ()
-        (spacemacs/toggle-visual-line-navigation-on)
-        (funcall 'markdown-mode))
+#+begin_src emacs-lisp
+  (use-package exwm-edit
+    :config
+    ;; Edit text in an *exwm-edit* buffer
+    (define-key exwm-mode-map (kbd "C-c '") 'exwm-edit--compose)
 
-      (add-hook 'exwm-edit-compose-hook 'ag-exwm/on-exwm-edit-compose))
-  #+end_src
+    ;; You can use hooks to, e.g., set desired mode:
+    (defun ag-exwm/on-exwm-edit-compose ()
+      (spacemacs/toggle-visual-line-navigation-on)
+      (funcall 'markdown-mode))
+
+    (add-hook 'exwm-edit-compose-hook 'ag-exwm/on-exwm-edit-compose))
+#+end_src
+
+* Keybindings
+
+In the ~*exwm-edit*~ buffer, you can use ~C-c '~, ~C-c C-'~, ~C-c C-c~, or
+whatever key you have bound to ~save-buffer~ to insert the buffer
+contents into the X program.  To discard the contents of the
+~*exwm-edit*~ buffer and go back to the X program, press ~C-c C-k~.
