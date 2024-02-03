@@ -217,16 +217,15 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
          (selection-coding-system 'utf-8))             ; required for multilang-support
     (when (derived-mode-p 'exwm-mode)
       (setq exwm-edit--last-window-configuration (current-window-configuration))
-      (progn
-        (exwm-input--fake-key ?\C-a)
-	(unless (or no-copy (not exwm-edit-copy-over-contents))
-	  (when (gui-get-selection 'CLIPBOARD 'UTF8_STRING)
-	    (setq exwm-edit-last-kill (substring-no-properties (gui-get-selection 'CLIPBOARD 'UTF8_STRING))))
-	  (exwm-input--fake-key ?\C-c)
-	  (exwm-edit--yank))
-	(run-hooks 'exwm-edit-compose-minibuffer-hook)
-	(exwm-edit--send-to-exwm-buffer
-	 (completing-read "exwm-edit: " completing-read-entries))))))
+      (exwm-input--fake-key ?\C-a)
+      (unless (or no-copy (not exwm-edit-copy-over-contents))
+	(when (gui-get-selection 'CLIPBOARD 'UTF8_STRING)
+	  (setq exwm-edit-last-kill (substring-no-properties (gui-get-selection 'CLIPBOARD 'UTF8_STRING))))
+	(exwm-input--fake-key ?\C-c)
+	(exwm-edit--yank))
+      (run-hooks 'exwm-edit-compose-minibuffer-hook)
+      (exwm-edit--send-to-exwm-buffer
+       (completing-read "exwm-edit: " completing-read-entries)))))
 
 (provide 'exwm-edit)
 
