@@ -42,3 +42,11 @@ In the ~*exwm-edit*~ buffer, you can use ~C-c '~, ~C-c C-'~, ~C-c C-c~, or
 whatever key you have bound to ~save-buffer~ to insert the buffer
 contents into the X program.  To discard the contents of the
 ~*exwm-edit*~ buffer and go back to the X program, press ~C-c C-k~.
+
+* Changelog
+
+** v0.0.3-pre
+
+- Autoload ~exwm-edit--compose~ and ~exwm-edit--compose-minibuffer~
+- Just loading ~exwm-edit~ no longer binds any keys
+- Bug fixes
