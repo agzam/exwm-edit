@@ -139,7 +139,7 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
   (setq exwm-edit--last-exwm-buffer nil))
 
 (defun exwm-edit--cancel ()
-  "Called to cancell editing in a buffer created by `exwm-edit--compose'."
+  "Called to cancel editing in a buffer created by `exwm-edit--compose'."
   (interactive)
   (run-hooks 'exwm-edit-before-cancel-hook)
   (when exwm-edit-split
