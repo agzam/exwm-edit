@@ -204,6 +204,7 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
      (_ (next-window))))
   (switch-to-buffer buffer))
 
+;;;###autoload
 (defun exwm-edit--compose (&optional no-copy)
   "Edit text in an EXWM app.
 If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
@@ -234,6 +235,7 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
           (unless (or no-copy (not exwm-edit-copy-over-contents))
 	    (exwm-edit--yank)))))))
 
+;;;###autoload
 (defun exwm-edit--compose-minibuffer (&optional completing-read-entries no-copy)
   "Edit text in an EXWM app.
 If COMPLETING-READ-ENTRIES is non-nil, feed that list into the collection
