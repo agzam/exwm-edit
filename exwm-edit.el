@@ -162,7 +162,7 @@ This is then inserted into the `exwm-edit' buffer."
 
 (defun exwm-edit--buffer-title (str)
   "`exwm-edit' buffer title based on STR."
-  (concat "*exwm-edit " str " *"))
+  (format "*exwm-edit %s *" str))
 
 (defun exwm-edit--yank ()
   "Yank text to Emacs buffer with check for empty strings."
