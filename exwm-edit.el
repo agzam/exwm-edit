@@ -61,42 +61,40 @@ If this is too low the text might not be pasted into the exwm buffer")
   "The delay to clean the `kill-ring' after pasting the text back 
 to the exwm-buffer.")
 
+(defgroup exwm-edit nil
+  "Edit mode for EXWM"
+  :group 'applications
+  :prefix "exwm-edit-")
+
 (defcustom exwm-edit-split nil
   "If non-nil `exwm-edit--compose' splits the window.
 possible values right/below/nil/t."
-  :type 'string
-  :group 'exwm-edit)
+  :type 'string)
 
 (defcustom exwm-edit-copy-over-contents t
   "If non-nil, copy over the contents of the exwm text box. 
 This is then inserted into the `exwm-edit' buffer."
-  :type 'boolean
-  :group 'exwm-edit)
+  :type 'boolean)
 
 (defcustom exwm-edit-bind-default-keys t
   "If non-nil bind default keymaps on load."
-  :type 'boolean
-  :group 'exwm-edit)
+  :type 'boolean)
 
 (defcustom exwm-edit-compose-hook nil
   "Customizable hook, runs after `exwm-edit--compose' buffer created."
-  :type 'hook
-  :group 'exwm-edit)
+  :type 'hook)
 
 (defcustom exwm-edit-compose-minibuffer-hook nil
   "Customizable hook, runs after `exwm-edit--compose-minibuffer' buffer created."
-  :type 'hook
-  :group 'exwm-edit)
+  :type 'hook)
 
 (defcustom exwm-edit-before-finish-hook nil
   "Customizable hook, runs before `exwm-edit--finish'."
-  :type 'hook
-  :group 'exwm-edit)
+  :type 'hook)
 
 (defcustom exwm-edit-before-cancel-hook nil
   "Customizable hook, runs before `exwm-edit--cancel'."
-  :type 'hook
-  :group 'exwm-edit)
+  :type 'hook)
 
 (defun exwm-edit--switch ()
   "Restore buffer/window layout after leaving the edit buffer.
