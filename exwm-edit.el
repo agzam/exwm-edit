@@ -76,10 +76,6 @@ possible values right/below/nil/t."
 This is then inserted into the `exwm-edit' buffer."
   :type 'boolean)
 
-(defcustom exwm-edit-bind-default-keys t
-  "If non-nil bind default keymaps on load."
-  :type 'boolean)
-
 (defcustom exwm-edit-compose-hook nil
   "Customizable hook, runs after `exwm-edit--compose' buffer created."
   :type 'hook)
@@ -139,7 +135,7 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
   (setq exwm-edit--last-exwm-buffer nil))
 
 (defun exwm-edit--cancel ()
-  "Called to cancell editing in a buffer created by `exwm-edit--compose'."
+  "Called to cancel editing in a buffer created by `exwm-edit--compose'."
   (interactive)
   (run-hooks 'exwm-edit-before-cancel-hook)
   (when exwm-edit-split
@@ -204,6 +200,7 @@ Depending on `exwm-edit-split' and amount of visible windows on the screen."
      (_ (next-window))))
   (switch-to-buffer buffer))
 
+;;;###autoload
 (defun exwm-edit--compose (&optional no-copy)
   "Edit text in an EXWM app.
 If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
@@ -234,6 +231,7 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
           (unless (or no-copy (not exwm-edit-copy-over-contents))
 	    (exwm-edit--yank)))))))
 
+;;;###autoload
 (defun exwm-edit--compose-minibuffer (&optional completing-read-entries no-copy)
   "Edit text in an EXWM app.
 If COMPLETING-READ-ENTRIES is non-nil, feed that list into the collection
@@ -258,10 +256,6 @@ If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
 	(run-hooks 'exwm-edit-compose-minibuffer-hook)
 	(exwm-edit--send-to-exwm-buffer
 	 (completing-read "exwm-edit: " completing-read-entries))))))
-
-(when exwm-edit-bind-default-keys
-  (exwm-input-set-key (kbd "C-c '") #'exwm-edit--compose)
-  (exwm-input-set-key (kbd "C-c C-'") #'exwm-edit--compose))
 
 (provide 'exwm-edit)
 
