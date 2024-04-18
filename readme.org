@@ -54,4 +54,7 @@ contents into the X program.  To discard the contents of the
 
 - Autoload ~exwm-edit--compose~ and ~exwm-edit--compose-minibuffer~
 - Just loading ~exwm-edit~ no longer binds any keys
+- Window display now uses standard ~display-buffer~ actions.
+  Customize ~exwm-edit-display-buffer-action~ instead of
+  ~exwm-edit-split~.
 - Bug fixes
