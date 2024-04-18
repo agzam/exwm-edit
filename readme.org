@@ -50,7 +50,7 @@ contents into the X program.  To discard the contents of the
 
 * Changelog
 
-** v0.0.3-pre
+** v0.0.3
 
 - Autoload ~exwm-edit--compose~ and ~exwm-edit--compose-minibuffer~
 - Just loading ~exwm-edit~ no longer binds any keys
