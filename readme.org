@@ -20,23 +20,38 @@
   - edit and modify code snippets with ease in Slack;
   - etc. and etc.
 
-* Keybindings
-  Default keybindings are just like in Org-mode (for editing source blocks):
-
-  ~C-c '​~ or ~C-c C-'​~  - edit
-
-  ~C-c '​~ or ~C-c C-c~  - finish editing
-
-  ~C-c C-k~ - cancel editing
 * Customization
-  You can use hooks to set desired mode, etc, e.g.:
 
-  #+begin_src emacs-lisp
-    (use-package exwm-edit
-      :config
-      (defun ag-exwm/on-exwm-edit-compose ()
-        (spacemacs/toggle-visual-line-navigation-on)
-        (funcall 'markdown-mode))
+In your ~init.el~ file, put the following ~use-package~ declaration before
+the call to ~exwm-enable~, since adjustments to ~exwm-input-global-keys~
+only take effect before EXWM is enabled.
 
-      (add-hook 'exwm-edit-compose-hook 'ag-exwm/on-exwm-edit-compose))
-  #+end_src
+#+begin_src emacs-lisp
+  (use-package exwm-edit
+    :config
+    ;; Edit text in an *exwm-edit* buffer
+    (add-to-list 'exwm-input-global-keys '([?\C-c ?\'] . exwm-edit--compose))
+    (add-to-list 'exwm-input-global-keys '([?\C-c ?\'] . exwm-edit--compose))
+
+    ;; You can use hooks to, e.g., set desired mode:
+    (defun ag-exwm/on-exwm-edit-compose ()
+      (spacemacs/toggle-visual-line-navigation-on)
+      (funcall 'markdown-mode))
+
+    (add-hook 'exwm-edit-compose-hook 'ag-exwm/on-exwm-edit-compose))
+#+end_src
+
+* Keybindings
+
+In the ~*exwm-edit*~ buffer, you can use ~C-c '~, ~C-c C-'~, ~C-c C-c~, or
+whatever key you have bound to ~save-buffer~ to insert the buffer
+contents into the X program.  To discard the contents of the
+~*exwm-edit*~ buffer and go back to the X program, press ~C-c C-k~.
+
+* Changelog
+
+** v0.0.3-pre
+
+- Autoload ~exwm-edit--compose~ and ~exwm-edit--compose-minibuffer~
+- Just loading ~exwm-edit~ no longer binds any keys
+- Bug fixes
