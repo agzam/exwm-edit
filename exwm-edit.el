@@ -174,6 +174,7 @@ This is then inserted into the `exwm-edit' buffer."
 			(unless (and exwm-edit-last-kill (string= exwm-edit-last-kill clip))
 			  (insert clip)))))))
 
+;;;###autoload
 (defun exwm-edit--compose (&optional no-copy)
   "Edit text in an EXWM app.
 If NO-COPY is non-nil, don't copy over the contents of the exwm text box"
