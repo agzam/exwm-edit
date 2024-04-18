@@ -6,7 +6,7 @@
 ;; Keywords: convenience
 ;; License: GPL v3
 ;; Package-Requires: ((emacs "27.1"))
-;; Version: 0.0.3
+;; Version: 0.0.4-pre
 
 ;;; Commentary:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
