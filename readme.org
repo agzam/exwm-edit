@@ -57,4 +57,5 @@ contents into the X program.  To discard the contents of the
 - Window display now uses standard ~display-buffer~ actions.
   Customize ~exwm-edit-display-buffer-action~ instead of
   ~exwm-edit-split~.
+- Require Emacs 27.1 or later
 - Bug fixes
