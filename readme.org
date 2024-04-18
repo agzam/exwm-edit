@@ -22,11 +22,16 @@
 
 * Customization
 
+In your ~init.el~ file, put the following ~use-package~ declaration before
+the call to ~exwm-enable~, since adjustments to ~exwm-input-global-keys~
+only take effect before EXWM is enabled.
+
 #+begin_src emacs-lisp
   (use-package exwm-edit
     :config
     ;; Edit text in an *exwm-edit* buffer
-    (define-key exwm-mode-map (kbd "C-c '") 'exwm-edit--compose)
+    (add-to-list 'exwm-input-global-keys '([?\C-c ?\'] . exwm-edit--compose))
+    (add-to-list 'exwm-input-global-keys '([?\C-c ?\'] . exwm-edit--compose))
 
     ;; You can use hooks to, e.g., set desired mode:
     (defun ag-exwm/on-exwm-edit-compose ()
